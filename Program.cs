@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
+using OpenTK.Windowing.Desktop;
 
 namespace crop
 {
@@ -6,7 +7,16 @@ namespace crop
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var nativeWindowSettings = new NativeWindowSettings()
+            {
+                Size = new Vector2i(1280, 720),
+                Title = "CROP",
+            };
+
+            using (var window = new Window(GameWindowSettings.Default, nativeWindowSettings))
+            {
+                window.Run();
+            }
         }
     }
 }
