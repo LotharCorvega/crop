@@ -9,9 +9,10 @@ namespace crop
 {
     public class Window : GameWindow
     {
+        public Vector2 camerapos = (0, 0);
         public Vector2 playerpos = (0, 0);
         public float movementspeed = 2.0f;
-        public float zoom = 4;
+        public float zoom = 10;
 
         Vector2i gridsize = (10, 10);
 
@@ -19,6 +20,8 @@ namespace crop
         private uint[] indices;
 
         private int sizeofvertex = 4;
+
+        World defaultworld = new World();
 
         private void GenerateObjects()
         {
@@ -31,28 +34,31 @@ namespace crop
             {
                 for (int x = 0; x < gridsize.X; x++)
                 {
-                    float xp = (x + y) * 22.0f / 21.0f;
-                    float yp = 0.5f * (y - x);
+                    Vector2 grid = (x, y);
+                    Vector2 norm = World.ToNormalized(grid);
+
+                    float xp = norm.X;
+                    float yp = norm.Y;
 
                     vertices[i + 0] = -1.0f + xp;
                     vertices[i + 1] = 0.5f + yp;
-                    vertices[i + 2] = 0.0f;
-                    vertices[i + 3] = 0.0f;
+                    vertices[i + 2] = defaultworld.GetTextureCoordinates(x, y).X;
+                    vertices[i + 3] = defaultworld.GetTextureCoordinates(x, y).Y;
 
                     vertices[i + 4] = 1.0f + xp;
                     vertices[i + 5] = 0.5f + yp;
-                    vertices[i + 6] = 1.0f;
-                    vertices[i + 7] = 0.0f;
+                    vertices[i + 6] = defaultworld.GetTextureCoordinates(x, y).X + 0.125f;
+                    vertices[i + 7] = defaultworld.GetTextureCoordinates(x, y).Y;
 
                     vertices[i + 8] = 1.0f + xp;
                     vertices[i + 9] = -0.5f + yp;
-                    vertices[i + 10] = 1.0f;
-                    vertices[i + 11] = 1.0f;
+                    vertices[i + 10] = defaultworld.GetTextureCoordinates(x, y).X + 0.125f;
+                    vertices[i + 11] = defaultworld.GetTextureCoordinates(x, y).Y + 0.125f;
 
                     vertices[i + 12] = -1.0f + xp;
                     vertices[i + 13] = -0.5f + yp;
-                    vertices[i + 14] = 0.0f;
-                    vertices[i + 15] = 1.0f;
+                    vertices[i + 14] = defaultworld.GetTextureCoordinates(x, y).X;
+                    vertices[i + 15] = defaultworld.GetTextureCoordinates(x, y).Y + 0.125f;
 
                     indices[j + 0] = 0 + k;
                     indices[j + 1] = 1 + k;
@@ -106,7 +112,6 @@ namespace crop
         protected override void OnLoad()
         {
             GenerateObjects();
-            System.Diagnostics.Debug.WriteLine(vertices.Length);
 
             GL.ClearColor(0.368f, 0.5f, 0.3f, 1.0f);
 
@@ -136,7 +141,7 @@ namespace crop
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, sizeofvertex * sizeof(float), 2 * sizeof(float));
 
             //Load Texture
-            _texture = Texture.LoadFromFile("assets/grass.png");
+            _texture = Texture.LoadFromFile("assets/tiles.png");
             _texture.Use(TextureUnit.Texture0);
 
             //Allow Transparency
@@ -149,7 +154,7 @@ namespace crop
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             float aspectratio = Size.X / (float)Size.Y;
-            Matrix4 projection = Matrix4.CreateTranslation(-playerpos.X, -playerpos.Y, 0) * Matrix4.CreateOrthographic(aspectratio * zoom, zoom, 0.0f, 0.1f);
+            Matrix4 projection = Matrix4.CreateTranslation(-camerapos.X, -camerapos.Y, 0) * Matrix4.CreateOrthographic(aspectratio * zoom, zoom, 0.0f, 0.1f);
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
@@ -173,17 +178,18 @@ namespace crop
             float elapsedtime = (float)e.Time;
 
             if (keyboardstate.IsKeyDown(Keys.W))
-                playerpos.Y += movementspeed * elapsedtime;
+                camerapos.Y += movementspeed * elapsedtime;
             if (keyboardstate.IsKeyDown(Keys.S))
-                playerpos.Y -= movementspeed * elapsedtime;
+                camerapos.Y -= movementspeed * elapsedtime;
             if (keyboardstate.IsKeyDown(Keys.D))
-                playerpos.X += movementspeed * elapsedtime;
+                camerapos.X += movementspeed * elapsedtime;
             if (keyboardstate.IsKeyDown(Keys.A))
-                playerpos.X -= movementspeed * elapsedtime;
+                camerapos.X -= movementspeed * elapsedtime;
 
-            zoom = mousestate.Scroll.Y + 3.0f;
+            playerpos = World.ToGrid(camerapos);
+            zoom = -mousestate.Scroll.Y + 3.0f;
 
-            Title = $"{(int)(1 / elapsedtime)} FPS, {vertices.Length / sizeofvertex} vertices";
+            Title = $"{(int)(1 / elapsedtime)} FPS, {vertices.Length / sizeofvertex} vertices, Cam: (" + camerapos.X + ", " + camerapos.Y + ")\t\t Player: (" + playerpos.X + ", " + playerpos.Y + ")" + zoom;
 
             base.OnUpdateFrame(e);
         }
@@ -199,13 +205,13 @@ namespace crop
 
         protected override void OnUnload()
         {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.UseProgram(0);
 
+            GL.DeleteVertexArray(VertexArrayObject);
             GL.DeleteBuffer(VertexBufferObject);
             GL.DeleteBuffer(ElementBufferObject);
-            GL.DeleteVertexArray(VertexArrayObject);
 
             GL.DeleteProgram(_shader.Handle);
             GL.DeleteTexture(_texture.Handle);
