@@ -15,10 +15,61 @@ namespace crop
 
         Vector2i gridsize = (10, 10);
 
+        private float[] vertices;
+        private uint[] indices;
+
         private int sizeofvertex = 4;
 
+        private void GenerateObjects()
+        {
+            int i = 0, j = 0;
+            uint k = 0;
+            vertices = new float[gridsize.X * gridsize.Y * 16];
+            indices = new uint[gridsize.X * gridsize.Y * 6];
 
-        private readonly float[] vertices =
+            for (int y = 0; y < gridsize.Y; y++)
+            {
+                for (int x = 0; x < gridsize.X; x++)
+                {
+                    float xp = (x + y) * 22.0f / 21.0f;
+                    float yp = 0.5f * (y - x);
+
+                    vertices[i + 0] = -1.0f + xp;
+                    vertices[i + 1] = 0.5f + yp;
+                    vertices[i + 2] = 0.0f;
+                    vertices[i + 3] = 0.0f;
+
+                    vertices[i + 4] = 1.0f + xp;
+                    vertices[i + 5] = 0.5f + yp;
+                    vertices[i + 6] = 1.0f;
+                    vertices[i + 7] = 0.0f;
+
+                    vertices[i + 8] = 1.0f + xp;
+                    vertices[i + 9] = -0.5f + yp;
+                    vertices[i + 10] = 1.0f;
+                    vertices[i + 11] = 1.0f;
+
+                    vertices[i + 12] = -1.0f + xp;
+                    vertices[i + 13] = -0.5f + yp;
+                    vertices[i + 14] = 0.0f;
+                    vertices[i + 15] = 1.0f;
+
+                    indices[j + 0] = 0 + k;
+                    indices[j + 1] = 1 + k;
+                    indices[j + 2] = 2 + k;
+                    indices[j + 3] = 0 + k;
+                    indices[j + 4] = 2 + k;
+                    indices[j + 5] = 3 + k;
+
+                    i += 16;
+                    j += 6;
+                    k += 4;
+                }
+            }
+        }
+
+        /*
+        private readonly float[] _vertices =
         {
         //   Position     Texture coordinates
             -1.0f,  0.5f, 0.0f, 0.0f, //First Tile
@@ -32,13 +83,13 @@ namespace crop
              1.0f, -0.5f, 0.0f, 1.0f,
         };
 
-        private uint[] indices =
+        private uint[] _indices =
         {
             0, 1, 2,
             0, 2, 3,
             4, 5, 6,
             4, 6, 7,
-        };
+        };*/
 
         private int VertexBufferObject;
         private int VertexArrayObject;
@@ -54,6 +105,9 @@ namespace crop
 
         protected override void OnLoad()
         {
+            GenerateObjects();
+            System.Diagnostics.Debug.WriteLine(vertices.Length);
+
             GL.ClearColor(0.368f, 0.5f, 0.3f, 1.0f);
 
             //Initialize VAO
@@ -82,7 +136,7 @@ namespace crop
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, sizeofvertex * sizeof(float), 2 * sizeof(float));
 
             //Load Texture
-            _texture = Texture.LoadFromFile("assets/test.png");
+            _texture = Texture.LoadFromFile("assets/grass.png");
             _texture.Use(TextureUnit.Texture0);
 
             //Allow Transparency
