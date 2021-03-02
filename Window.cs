@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -104,6 +105,8 @@ namespace crop
         private Shader _shader;
         private Texture _texture;
 
+        Movement movement = new Movement();
+
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
         {
@@ -173,10 +176,9 @@ namespace crop
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            var keyboardstate = KeyboardState;
+            //var keyboardstate = KeyboardState;
             var mousestate = MouseState;
-            float elapsedtime = (float)e.Time;
-
+            /*
             if (keyboardstate.IsKeyDown(Keys.W))
                 camerapos.Y += movementspeed * elapsedtime;
             if (keyboardstate.IsKeyDown(Keys.S))
@@ -184,12 +186,22 @@ namespace crop
             if (keyboardstate.IsKeyDown(Keys.D))
                 camerapos.X += movementspeed * elapsedtime;
             if (keyboardstate.IsKeyDown(Keys.A))
-                camerapos.X -= movementspeed * elapsedtime;
+                camerapos.X -= movementspeed * elapsedtime;*/
 
-            playerpos = World.ToGrid(camerapos);
+            movement.Update(this, (float)e.Time);
+
+            playerpos = movement.position;
+
+            camerapos = playerpos;//World.ToNormalized(playerpos);
+
             zoom = -mousestate.Scroll.Y + 3.0f;
 
-            Title = $"{(int)(1 / elapsedtime)} FPS, {vertices.Length / sizeofvertex} vertices, Cam: (" + camerapos.X + ", " + camerapos.Y + ")\t\t Player: (" + playerpos.X + ", " + playerpos.Y + ")" + zoom;
+            string info = $"{(int)(1 / e.Time)} FPS, " +
+                           "Pos: (" + string.Format("{0:0.00}", movement.position.X) + ", " + string.Format("{0:0.00}", movement.position.Y) + ") " +
+                           "Vel: (" + string.Format("{0:0.00}", movement.velocity.X) + ", " + string.Format("{0:0.00}", movement.velocity.Y) + ") ";
+
+
+            Title = info;
 
             base.OnUpdateFrame(e);
         }

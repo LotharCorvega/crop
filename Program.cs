@@ -11,6 +11,7 @@ namespace crop
             {
                 Size = new Vector2i(1280, 720),
                 Title = "CROP",
+                //Icon = 
             };
 
             using (var window = new Window(GameWindowSettings.Default, nativeWindowSettings))
