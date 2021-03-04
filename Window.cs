@@ -108,6 +108,7 @@ namespace crop
         private Texture _texture;
 
         Movement movement = new Movement();
+        Camera Camera1 = new Camera();
 
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
@@ -116,7 +117,9 @@ namespace crop
 
         protected override void OnLoad()
         {
-            GenerateObjects();
+            Renderer.Initialize();
+            
+            /*GenerateObjects();
 
             GL.ClearColor(0.368f, 0.5f, 0.3f, 1.0f);
 
@@ -151,14 +154,17 @@ namespace crop
 
             //Allow Transparency
             GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);*/
 
             base.OnLoad();
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            float aspectratio = Size.X / (float)Size.Y;
+            Camera1.Update(this);
+            Camera1.Render();
+            
+            /*float aspectratio = Size.X / (float)Size.Y;
             Matrix4 projection = Matrix4.CreateTranslation(-camerapos.X, -camerapos.Y, 0) * Matrix4.CreateOrthographic(aspectratio * zoom, zoom, 0.0f, 0.1f);
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
@@ -171,7 +177,7 @@ namespace crop
 
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 
-            SwapBuffers();
+            SwapBuffers();*/
 
             base.OnRenderFrame(e);
         }
