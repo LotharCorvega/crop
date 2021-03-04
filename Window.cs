@@ -20,12 +20,14 @@ namespace crop
         private float[] vertices;
         private uint[] indices;
 
-        private int sizeofvertex = 4;
-
         World defaultworld = new World();
 
         private void GenerateObjects()
         {
+            Vertex testvertex = new Vertex();
+
+            testvertex.Position.X = 0.5f;
+
             int i = 0, j = 0;
             uint k = 0;
             vertices = new float[gridsize.X * gridsize.Y * 16];
@@ -137,11 +139,11 @@ namespace crop
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 2, VertexAttribPointerType.Float, false, sizeofvertex * sizeof(float), 0);
+            GL.VertexAttribPointer(vertexLocation, 2, VertexAttribPointerType.Float, false, Vertex.Size, 0);
 
             var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
             GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, sizeofvertex * sizeof(float), 2 * sizeof(float));
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, Vertex.Size, 2 * sizeof(float));
 
             //Load Texture
             _texture = Texture.LoadFromFile("assets/tiles.png");
@@ -176,17 +178,7 @@ namespace crop
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            //var keyboardstate = KeyboardState;
             var mousestate = MouseState;
-            /*
-            if (keyboardstate.IsKeyDown(Keys.W))
-                camerapos.Y += movementspeed * elapsedtime;
-            if (keyboardstate.IsKeyDown(Keys.S))
-                camerapos.Y -= movementspeed * elapsedtime;
-            if (keyboardstate.IsKeyDown(Keys.D))
-                camerapos.X += movementspeed * elapsedtime;
-            if (keyboardstate.IsKeyDown(Keys.A))
-                camerapos.X -= movementspeed * elapsedtime;*/
 
             movement.Update(this, (float)e.Time);
 

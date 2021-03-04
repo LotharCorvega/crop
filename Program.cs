@@ -7,6 +7,9 @@ namespace crop
     {
         static void Main(string[] args)
         {
+
+            Vertex MyVertex = new Vertex();
+
             var nativeWindowSettings = new NativeWindowSettings()
             {
                 Size = new Vector2i(1280, 720),
