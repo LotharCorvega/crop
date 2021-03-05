@@ -57,8 +57,8 @@ namespace crop
         public static Vector2 ToGrid(Vector2 NormalizedCoords)
         {
             Matrix2 Transformation;
-            Transformation.Row0 = (22.0f / 44.0f, -1);
-            Transformation.Row1 = (22.0f / 44.0f, 1);
+            Transformation.Row0 = (21.0f / 44.0f, -1);
+            Transformation.Row1 = (21.0f / 44.0f, 1);
 
             return Transformation * NormalizedCoords;
         }
