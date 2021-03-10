@@ -1,10 +1,11 @@
-#version 330 core
+#version 450 core
 
 layout(location = 0) in vec2 aPosition;
 layout(location = 1) in vec2 aTexCoord;
 
-out vec2 texCoord;
 uniform mat4 transform;
+
+out vec2 texCoord;
 
 void main(void)
 {
