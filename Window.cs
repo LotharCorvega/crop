@@ -59,3 +59,15 @@ namespace crop
         }
     }
 }
+
+/*Renderer.Vertices[0].X = (float)(-Math.Cos(time) - 0.5 * Math.Sin(time));         fuck the math library
+Renderer.Vertices[0].Y = (float)(-Math.Sin(time) + 0.5 * Math.Cos(time));
+
+Renderer.Vertices[1].X = (float)(Math.Cos(time) - 0.5 * Math.Sin(time));
+Renderer.Vertices[1].Y = (float)(Math.Sin(time) + 0.5 * Math.Cos(time));
+
+Renderer.Vertices[2].X = (float)(Math.Cos(time) + 0.5 * Math.Sin(time));
+Renderer.Vertices[2].Y = (float)(Math.Sin(time) - 0.5 * Math.Cos(time));
+
+Renderer.Vertices[3].X = (float)(-Math.Cos(time) + 0.5 * Math.Sin(time));
+Renderer.Vertices[3].Y = (float)(-Math.Sin(time) - 0.5 * Math.Cos(time));*/
