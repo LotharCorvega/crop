@@ -10,7 +10,7 @@ namespace crop
 {
     unsafe class Renderer
     {
-        const int MaxQuads = 1000;
+        const int MaxQuads = 10;
         const int MaxVertices = MaxQuads * 4;
         const int MaxIndices = MaxQuads * 6;
         const int MaxTextures = 6;
