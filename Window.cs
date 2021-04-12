@@ -33,8 +33,15 @@ namespace crop
             base.OnRenderFrame(e);
         }
 
+        double time;
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
+            time += e.Time;
+
+            Renderer.Sprites[0].X = (float)Math.Cos(time * 2);
+            Renderer.Sprites[0].Y = (float)Math.Sin(time * 2);
+
             Title = $"{(int)(1 / e.Time)} FPS, " +
                            "Pos: (" + string.Format("{0:0.00}", Camera1.Movement.position.X) + ", " + string.Format("{0:0.00}", Camera1.Movement.position.Y) + ") " +
                            "Vel: (" + string.Format("{0:0.00}", Camera1.Movement.velocity.X) + ", " + string.Format("{0:0.00}", Camera1.Movement.velocity.Y) + ") ";

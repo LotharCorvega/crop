@@ -1,12 +1,12 @@
 #version 450 core
 
-in vec2 TextureCoordinates;
+in vec2 fragTexCoord;
 
-out vec4 outputColor;
+out vec4 ColorOutput;
 
 uniform sampler2D Textures[6];
 
 void main()
 {
-    outputColor = texture(Textures[0], TextureCoordinates);
+    ColorOutput = texture(Textures[1], fragTexCoord);
 }

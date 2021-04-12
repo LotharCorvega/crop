@@ -10,30 +10,32 @@ namespace crop
 {
     unsafe class Renderer
     {
-        const int MaxQuads = 10;
-        const int MaxVertices = MaxQuads * 4;
-        const int MaxIndices = MaxQuads * 6;
+        const int MaxSprites = 100;
         const int MaxTextures = 6;
 
         private static int VertexArrayObject;
-        private static int VertexBufferObject;
-        private static int ElementBufferObject;
-
-        private static uint[] Indices;
-        public static Vertex[] Vertices;
+        private static int SpriteBuffer;
 
         private static int ShaderProgram;
         private static int[] Textures;
         private static string[] TextureImports;
 
-        public struct Vertex
+        public struct Sprite
         {
             public float X;
             public float Y;
 
+            public float Width;
+            public float Height;
+
             public float U;
             public float V;
+
+            public float TexWidth;
+            public float TexHeight;
         }
+
+        public static Sprite[] Sprites;
 
         public static void Initialize()
         {
@@ -41,70 +43,54 @@ namespace crop
             VertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(VertexArrayObject);
 
-            //Set VBO
-            Vertices = new Vertex[MaxVertices];
+            //Initialize IBO
+            SpriteBuffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, SpriteBuffer);
 
-            for (int i = 0; i < MaxVertices; i += 4)
+            Sprites = new Sprite[MaxSprites];
+
+            Random rand = new Random();
+
+            for(int i = 0; i < MaxSprites; i++)
             {
-                Vertices[i + 0].X = -1.0f + i / 2;
-                Vertices[i + 0].Y = 0.5f;
-                Vertices[i + 0].U = 0.0f;
-                Vertices[i + 0].V = 0.0f;
+                Sprites[i].X = (float)rand.NextDouble();
+                Sprites[i].Y = (float)rand.NextDouble();
 
-                Vertices[i + 1].X = 1.0f + i / 2;
-                Vertices[i + 1].Y = 0.5f;
-                Vertices[i + 1].U = 1.0f;
-                Vertices[i + 1].V = 0.0f;
+                Sprites[i].Width = 2.0F;
+                Sprites[i].Height = 1.0F;
 
-                Vertices[i + 2].X = 1.0f + i / 2;
-                Vertices[i + 2].Y = -0.5f;
-                Vertices[i + 2].U = 1.0f;
-                Vertices[i + 2].V = 1.0f;
+                Sprites[i].U = 0.0F;
+                Sprites[i].V = 0.0F;
 
-                Vertices[i + 3].X = -1.0f + i / 2;
-                Vertices[i + 3].Y = -0.5f;
-                Vertices[i + 3].U = 0.0f;
-                Vertices[i + 3].V = 1.0f;
+                Sprites[i].TexWidth = 1.0F;
+                Sprites[i].TexHeight = 1.0F;
             }
 
-            //Initialize VBO
-            VertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, MaxVertices * sizeof(Vertex), IntPtr.Zero, BufferUsageHint.DynamicDraw);
-
-            //Set EBO
-            Indices = new uint[MaxIndices];
-
-            for (uint i = 0, j = 0; i < MaxIndices; i += 6)
-            {
-                Indices[i + 0] = 0 + j;
-                Indices[i + 1] = 1 + j;
-                Indices[i + 2] = 2 + j;
-                Indices[i + 3] = 0 + j;
-                Indices[i + 4] = 2 + j;
-                Indices[i + 5] = 3 + j;
-
-                j += 4;
-            }
-
-            //Initialize EBO
-            ElementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, MaxIndices * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, sizeof(Sprite) * Sprites.Length, Sprites, BufferUsageHint.DynamicDraw);
 
             //Set VAO (Position)
             GL.EnableVertexArrayAttrib(VertexArrayObject, 0);
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, sizeof(Vertex), 0 * sizeof(float));
+            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 0 * sizeof(float));
 
-            //Set VAO (Texture Coordinates)
             GL.EnableVertexArrayAttrib(VertexArrayObject, 1);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, sizeof(Vertex), 2 * sizeof(float));
+            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 2 * sizeof(float));
+
+            GL.EnableVertexArrayAttrib(VertexArrayObject, 2);
+            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 4 * sizeof(float));
+
+            GL.EnableVertexArrayAttrib(VertexArrayObject, 3);
+            GL.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 6 * sizeof(float));
 
             //Load Shaders
             var ShaderSource = File.ReadAllText("Shaders/shader.vert");
             var VertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(VertexShader, ShaderSource);
             GL.CompileShader(VertexShader);
+
+            ShaderSource = File.ReadAllText("Shaders/shader.geom");
+            var GeometryShader = GL.CreateShader(ShaderType.GeometryShader);
+            GL.ShaderSource(GeometryShader, ShaderSource);
+            GL.CompileShader(GeometryShader);
 
             ShaderSource = File.ReadAllText("Shaders/shader.frag");
             var FragmentShader = GL.CreateShader(ShaderType.FragmentShader);
@@ -113,12 +99,15 @@ namespace crop
 
             ShaderProgram = GL.CreateProgram();
             GL.AttachShader(ShaderProgram, VertexShader);
+            GL.AttachShader(ShaderProgram, GeometryShader);
             GL.AttachShader(ShaderProgram, FragmentShader);
             GL.LinkProgram(ShaderProgram);
 
             GL.DetachShader(ShaderProgram, VertexShader);
+            GL.DetachShader(ShaderProgram, GeometryShader);
             GL.DetachShader(ShaderProgram, FragmentShader);
             GL.DeleteShader(FragmentShader);
+            GL.DeleteShader(GeometryShader);
             GL.DeleteShader(VertexShader);
 
             //Load Texture
@@ -167,17 +156,16 @@ namespace crop
             GL.ClearColor(0.368f, 0.5f, 0.3f, 1.0f);
         }
 
-        public static void Render(Matrix4 Projection)
+        public static void Render(Matrix4 ViewMatrix)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            GL.BindVertexArray(VertexArrayObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, MaxVertices * sizeof(Vertex), Vertices, BufferUsageHint.DynamicDraw);
-
             GL.UseProgram(ShaderProgram);
-            GL.UniformMatrix4(GL.GetUniformLocation(ShaderProgram, "transform"), true, ref Projection);
+            GL.UniformMatrix4(GL.GetUniformLocation(ShaderProgram, "ViewMatrix"), true, ref ViewMatrix);
 
-            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.BindVertexArray(SpriteBuffer);
+            GL.BufferData(BufferTarget.ArrayBuffer, sizeof(Sprite) * Sprites.Length, Sprites, BufferUsageHint.DynamicDraw);
+            GL.DrawArrays(PrimitiveType.Points, 0, Sprites.Length);
         }
 
         public static void Unload()
@@ -187,8 +175,7 @@ namespace crop
             GL.UseProgram(0);
 
             GL.DeleteVertexArray(VertexArrayObject);
-            GL.DeleteBuffer(VertexBufferObject);
-            GL.DeleteBuffer(ElementBufferObject);
+            GL.DeleteVertexArray(SpriteBuffer);
 
             GL.DeleteProgram(ShaderProgram);
             for (int i = 0; i < MaxTextures; i++)
