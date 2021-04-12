@@ -18,6 +18,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Shaders\shader.geom">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Shaders\shader.frag">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
