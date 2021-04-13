@@ -16,12 +16,7 @@ void main()
 {
     gl_Position = gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0);
     gl_Position *= ViewMatrix;
-    fragTexCoord = vec2(geomTexCoord[0].x, geomTexCoord[0].y);
-    EmitVertex();
-
-    gl_Position = gl_in[0].gl_Position + vec4(0.0, geomSize[0].y, 0.0, 0.0);
-    gl_Position *= ViewMatrix;
-    fragTexCoord = vec2(geomTexCoord[0].x, geomTexCoord[0].y - geomTexSize[0].y);
+    fragTexCoord = vec2(geomTexCoord[0].x, geomTexCoord[0].y);          //Weird because Imagetexture inverted
     EmitVertex();
 
     gl_Position = gl_in[0].gl_Position + vec4(geomSize[0].x, 0.0, 0.0, 0.0);
@@ -29,9 +24,14 @@ void main()
     fragTexCoord = vec2(geomTexCoord[0].x + geomTexSize[0].x, geomTexCoord[0].y);
     EmitVertex();
 
-    gl_Position = gl_in[0].gl_Position + vec4(geomSize[0].x, geomSize[0].y, 0.0, 0.0);
+    gl_Position = gl_in[0].gl_Position + vec4(0.0, -geomSize[0].y,  0.0, 0.0);
     gl_Position *= ViewMatrix;
-    fragTexCoord = vec2(geomTexCoord[0].x + geomTexSize[0].x, geomTexCoord[0].y - geomTexSize[0].y);
+    fragTexCoord = vec2(geomTexCoord[0].x, geomTexCoord[0].y + geomTexSize[0].y);
+    EmitVertex();
+
+    gl_Position = gl_in[0].gl_Position + vec4(geomSize[0].x, -geomSize[0].y, 0.0, 0.0);
+    gl_Position *= ViewMatrix;
+    fragTexCoord = vec2(geomTexCoord[0].x + geomTexSize[0].x, geomTexCoord[0].y + geomTexSize[0].y);
     EmitVertex();
 
     EndPrimitive();

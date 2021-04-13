@@ -26,23 +26,6 @@ namespace crop
 
         }
 
-        public Vector2 GetTextureCoordinates(int x, int y)
-        {
-            char Tile = TileArray[y * WorldSize.Y + x];
-
-            switch (Tile)
-            {
-                case 'g':
-                    return (0.0f, 0.125f);
-                case 't':
-                    return (0.125f, 0.125f);
-                case 'l':
-                    return (0.125f, 0.0f);
-                default:
-                    return (0, 0);
-            }
-        }
-
         //Conversion from Worldcoordinates to Normalized Device Coordinates using Matries
         public static Vector2 ToNormalized(Vector2 GridCoords)
         {
