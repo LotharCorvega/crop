@@ -21,6 +21,8 @@ namespace crop
         {
             Renderer.Initialize();
 
+            DrawTest();
+
             base.OnLoad();
         }
 
@@ -33,15 +35,8 @@ namespace crop
             base.OnRenderFrame(e);
         }
 
-        double time;
-
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            time += e.Time;
-
-            Renderer.Sprites[0].X = (float)Math.Cos(time * 2);
-            Renderer.Sprites[0].Y = (float)Math.Sin(time * 2);
-
             Title = $"{(int)(1 / e.Time)} FPS, " +
                            "Pos: (" + string.Format("{0:0.00}", Camera1.Movement.position.X) + ", " + string.Format("{0:0.00}", Camera1.Movement.position.Y) + ") " +
                            "Vel: (" + string.Format("{0:0.00}", Camera1.Movement.velocity.X) + ", " + string.Format("{0:0.00}", Camera1.Movement.velocity.Y) + ") ";
@@ -64,17 +59,20 @@ namespace crop
 
             base.OnUnload();
         }
+
+        private void DrawTest()
+        {
+            Renderer.Sprites[0].X = 0.0F;
+            Renderer.Sprites[0].Y = 0.0F;
+
+            Renderer.Sprites[0].Width = 2.0F;
+            Renderer.Sprites[0].Height = 1.0F;
+
+            Renderer.Sprites[0].U = 0.0F;
+            Renderer.Sprites[0].V = 0.0F;
+
+            Renderer.Sprites[0].TexWidth = 0.125F;
+            Renderer.Sprites[0].TexHeight = 0.125F;
+        }
     }
 }
-
-/*Renderer.Vertices[0].X = (float)(-Math.Cos(time) - 0.5 * Math.Sin(time));         fuck the math library
-Renderer.Vertices[0].Y = (float)(-Math.Sin(time) + 0.5 * Math.Cos(time));
-
-Renderer.Vertices[1].X = (float)(Math.Cos(time) - 0.5 * Math.Sin(time));
-Renderer.Vertices[1].Y = (float)(Math.Sin(time) + 0.5 * Math.Cos(time));
-
-Renderer.Vertices[2].X = (float)(Math.Cos(time) + 0.5 * Math.Sin(time));
-Renderer.Vertices[2].Y = (float)(Math.Sin(time) - 0.5 * Math.Cos(time));
-
-Renderer.Vertices[3].X = (float)(-Math.Cos(time) + 0.5 * Math.Sin(time));
-Renderer.Vertices[3].Y = (float)(-Math.Sin(time) - 0.5 * Math.Cos(time));*/

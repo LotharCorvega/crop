@@ -10,7 +10,7 @@ namespace crop
 {
     unsafe class Renderer
     {
-        const int MaxSprites = 100;
+        const int MaxSprites = 10000;
         const int MaxTextures = 6;
 
         private static int VertexArrayObject;
@@ -20,6 +20,8 @@ namespace crop
         private static int[] Textures;
         private static string[] TextureImports;
 
+        public static Sprite[] Sprites;
+
         public struct Sprite
         {
             public float X;
@@ -28,14 +30,12 @@ namespace crop
             public float Width;
             public float Height;
 
-            public float U;
+            public float U;         //Origin: Top-Left
             public float V;
 
             public float TexWidth;
             public float TexHeight;
         }
-
-        public static Sprite[] Sprites;
 
         public static void Initialize()
         {
@@ -49,106 +49,96 @@ namespace crop
 
             Sprites = new Sprite[MaxSprites];
 
-            Random rand = new Random();
-
-            for(int i = 0; i < MaxSprites; i++)
-            {
-                Sprites[i].X = (float)rand.NextDouble();
-                Sprites[i].Y = (float)rand.NextDouble();
-
-                Sprites[i].Width = 2.0F;
-                Sprites[i].Height = 1.0F;
-
-                Sprites[i].U = 0.0F;
-                Sprites[i].V = 0.0F;
-
-                Sprites[i].TexWidth = 1.0F;
-                Sprites[i].TexHeight = 1.0F;
-            }
-
             GL.BufferData(BufferTarget.ArrayBuffer, sizeof(Sprite) * Sprites.Length, Sprites, BufferUsageHint.DynamicDraw);
 
             //Set VAO (Position)
-            GL.EnableVertexArrayAttrib(VertexArrayObject, 0);
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 0 * sizeof(float));
+            {
+                GL.EnableVertexArrayAttrib(VertexArrayObject, 0);
+                GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 0 * sizeof(float));
 
-            GL.EnableVertexArrayAttrib(VertexArrayObject, 1);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 2 * sizeof(float));
+                GL.EnableVertexArrayAttrib(VertexArrayObject, 1);
+                GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 2 * sizeof(float));
 
-            GL.EnableVertexArrayAttrib(VertexArrayObject, 2);
-            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 4 * sizeof(float));
+                GL.EnableVertexArrayAttrib(VertexArrayObject, 2);
+                GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 4 * sizeof(float));
 
-            GL.EnableVertexArrayAttrib(VertexArrayObject, 3);
-            GL.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 6 * sizeof(float));
+                GL.EnableVertexArrayAttrib(VertexArrayObject, 3);
+                GL.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, sizeof(Sprite), 6 * sizeof(float));
+            }
 
             //Load Shaders
-            var ShaderSource = File.ReadAllText("Shaders/shader.vert");
-            var VertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(VertexShader, ShaderSource);
-            GL.CompileShader(VertexShader);
+            {
+                var ShaderSource = File.ReadAllText("Shaders/shader.vert");
+                var VertexShader = GL.CreateShader(ShaderType.VertexShader);
+                GL.ShaderSource(VertexShader, ShaderSource);
+                GL.CompileShader(VertexShader);
 
-            ShaderSource = File.ReadAllText("Shaders/shader.geom");
-            var GeometryShader = GL.CreateShader(ShaderType.GeometryShader);
-            GL.ShaderSource(GeometryShader, ShaderSource);
-            GL.CompileShader(GeometryShader);
+                ShaderSource = File.ReadAllText("Shaders/shader.geom");
+                var GeometryShader = GL.CreateShader(ShaderType.GeometryShader);
+                GL.ShaderSource(GeometryShader, ShaderSource);
+                GL.CompileShader(GeometryShader);
 
-            ShaderSource = File.ReadAllText("Shaders/shader.frag");
-            var FragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(FragmentShader, ShaderSource);
-            GL.CompileShader(FragmentShader);
+                ShaderSource = File.ReadAllText("Shaders/shader.frag");
+                var FragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+                GL.ShaderSource(FragmentShader, ShaderSource);
+                GL.CompileShader(FragmentShader);
 
-            ShaderProgram = GL.CreateProgram();
-            GL.AttachShader(ShaderProgram, VertexShader);
-            GL.AttachShader(ShaderProgram, GeometryShader);
-            GL.AttachShader(ShaderProgram, FragmentShader);
-            GL.LinkProgram(ShaderProgram);
+                ShaderProgram = GL.CreateProgram();
+                GL.AttachShader(ShaderProgram, VertexShader);
+                GL.AttachShader(ShaderProgram, GeometryShader);
+                GL.AttachShader(ShaderProgram, FragmentShader);
+                GL.LinkProgram(ShaderProgram);
 
-            GL.DetachShader(ShaderProgram, VertexShader);
-            GL.DetachShader(ShaderProgram, GeometryShader);
-            GL.DetachShader(ShaderProgram, FragmentShader);
-            GL.DeleteShader(FragmentShader);
-            GL.DeleteShader(GeometryShader);
-            GL.DeleteShader(VertexShader);
+                GL.DetachShader(ShaderProgram, VertexShader);
+                GL.DetachShader(ShaderProgram, GeometryShader);
+                GL.DetachShader(ShaderProgram, FragmentShader);
+                GL.DeleteShader(FragmentShader);
+                GL.DeleteShader(GeometryShader);
+                GL.DeleteShader(VertexShader);
+
+                GL.UseProgram(ShaderProgram);
+            }
 
             //Load Texture
-            TextureImports = new string[]
             {
+                TextureImports = new string[]
+                {
                 "assets/empty.png",
                 "assets/test.png",
                 "assets/grass.png",
                 "assets/trunk.png",
                 "assets/ascii.png",
-                "assets/tiles.png",
-            };
-            Textures = new int[MaxTextures];
+                "assets/tiles.png"
+                };
+                Textures = new int[MaxTextures];
 
-            for (int i = 0; i < MaxTextures; i++)
-            {
-                Textures[i] = GL.GenTexture();
-                GL.ActiveTexture(TextureUnit.Texture0 + i);
-                GL.BindTexture(TextureTarget.Texture2D, Textures[i]);
-
-                using (var Bitmap = new Bitmap(TextureImports[i]))
+                for (int i = 0; i < MaxTextures; i++)
                 {
-                    var ImageTexture = Bitmap.LockBits(new Rectangle(0, 0, Bitmap.Width, Bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Bitmap.Width, Bitmap.Height, 0, PixelFormat.Bgra, PixelType.UnsignedByte, ImageTexture.Scan0);
+                    Textures[i] = GL.GenTexture();
+                    GL.ActiveTexture(TextureUnit.Texture0 + i);
+                    GL.BindTexture(TextureTarget.Texture2D, Textures[i]);
+
+                    using (var Bitmap = new Bitmap(TextureImports[i]))
+                    {
+                        var ImageTexture = Bitmap.LockBits(new Rectangle(0, 0, Bitmap.Width, Bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Bitmap.Width, Bitmap.Height, 0, PixelFormat.Bgra, PixelType.UnsignedByte, ImageTexture.Scan0);
+                    }
+
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+
+                    GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
                 }
 
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                int[] TextureSlots = new int[MaxTextures];
+                for (int i = 0; i < MaxTextures; i++)
+                    TextureSlots[i] = i;
 
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GL.Uniform1(GL.GetUniformLocation(ShaderProgram, "Textures"), MaxTextures, TextureSlots);
             }
-
-            int[] TextureSlots = new int[MaxTextures];
-            for (int i = 0; i < MaxTextures; i++)
-                TextureSlots[i] = i;
-
-            GL.UseProgram(ShaderProgram);
-            GL.Uniform1(GL.GetUniformLocation(ShaderProgram, "Textures"), MaxTextures, TextureSlots);
 
             //Allow Transparency
             GL.Enable(EnableCap.Blend);
