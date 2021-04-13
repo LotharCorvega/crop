@@ -21,7 +21,10 @@ namespace crop
         {
             Renderer.Initialize();
 
-            DrawTest();
+            World World1 = new World();
+            World1.DrawChunck();
+
+            //DrawTest();
 
             base.OnLoad();
         }

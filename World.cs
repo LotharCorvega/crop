@@ -7,8 +7,7 @@ namespace crop
 {
     class World
     {
-        Vector2 PlayerPosition = (0, 0);
-        Vector2i WorldSize = (10, 10);
+        Vector2i ChunckSize = (10, 10);
 
         char[] TileArray = {'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g',
                             'u', 'g', 'g', 'g', 'g', 'u', 'u', 'g', 'u', 'u',
@@ -24,6 +23,34 @@ namespace crop
         public World()
         {
 
+        }
+
+        public void DrawChunck()
+        {
+            for(int y = 0; y < ChunckSize.Y; y++)
+                for(int x = 0; x < ChunckSize.X; x++)
+                {
+                    int index = x + y * ChunckSize.X;
+
+                    SetTile(index, 10, x, y);
+                }
+        }        
+
+        public void SetTile(int Index, byte Type, int x, int y)
+        {
+            Vector2 Position = ToNormalized((x, y));
+            
+            Renderer.Sprites[Index].X = Position.X;
+            Renderer.Sprites[Index].Y = Position.Y;
+
+            Renderer.Sprites[Index].Width = 2.0F;
+            Renderer.Sprites[Index].Height = 1.0F;
+
+            Renderer.Sprites[Index].U = (Type % 8) / 8.0F;
+            Renderer.Sprites[Index].V = (Type / 8) / 8.0F;
+
+            Renderer.Sprites[Index].TexWidth = 0.125F;
+            Renderer.Sprites[Index].TexHeight = 0.125F;
         }
 
         //Conversion from Worldcoordinates to Normalized Device Coordinates using Matries
