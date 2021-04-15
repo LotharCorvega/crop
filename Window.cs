@@ -20,10 +20,6 @@ namespace crop
         protected override void OnLoad()
         {
             Renderer.Initialize();
-
-            World World1 = new World();
-            World1.DrawChunck();
-
             //DrawTest();
 
             base.OnLoad();
@@ -38,8 +34,15 @@ namespace crop
             base.OnRenderFrame(e);
         }
 
+        World World1 = new World();
+        double timepassed;
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
+            timepassed += e.Time;
+
+            World1.DrawChunck((byte)(32 + (int)(timepassed * 10) % 11));
+
             Title = $"{(int)(1 / e.Time)} FPS, " +
                            "Pos: (" + string.Format("{0:0.00}", Camera1.Movement.position.X) + ", " + string.Format("{0:0.00}", Camera1.Movement.position.Y) + ") " +
                            "Vel: (" + string.Format("{0:0.00}", Camera1.Movement.velocity.X) + ", " + string.Format("{0:0.00}", Camera1.Movement.velocity.Y) + ") ";

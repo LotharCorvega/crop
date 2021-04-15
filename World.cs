@@ -25,14 +25,14 @@ namespace crop
 
         }
 
-        public void DrawChunck()
+        public void DrawChunck(byte i)
         {
             for(int y = 0; y < ChunckSize.Y; y++)
                 for(int x = 0; x < ChunckSize.X; x++)
                 {
                     int index = x + y * ChunckSize.X;
 
-                    SetTile(index, 10, x, y);
+                    SetTile(index, i, x, y);
                 }
         }        
 
@@ -46,11 +46,11 @@ namespace crop
             Renderer.Sprites[Index].Width = 2.0F;
             Renderer.Sprites[Index].Height = 1.0F;
 
-            Renderer.Sprites[Index].U = (Type % 8) / 8.0F;
-            Renderer.Sprites[Index].V = (Type / 8) / 8.0F;
+            Renderer.Sprites[Index].U = (Type % 16) / 16.0F;
+            Renderer.Sprites[Index].V = (Type / 16) / 16.0F;
 
-            Renderer.Sprites[Index].TexWidth = 0.125F;
-            Renderer.Sprites[Index].TexHeight = 0.125F;
+            Renderer.Sprites[Index].TexWidth = 0.0625F;
+            Renderer.Sprites[Index].TexHeight = 0.0625F;
         }
 
         //Conversion from Worldcoordinates to Normalized Device Coordinates using Matries
