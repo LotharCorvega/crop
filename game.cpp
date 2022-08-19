@@ -21,10 +21,13 @@ bool Game::Keys[1024];
 unsigned int Game::Width;
 unsigned int Game::Height;
 
-glm::vec2 camPosition = { 0,0 };
+const unsigned int MAX_PIXEL_SCALE = 5;
+const unsigned int MIN_PIXEL_SCALE = 1;
 
-float scale = 1.0f;
-float maxspeed = 50;
+float pixelScale = 5.0f;
+
+glm::vec2 camPosition = { 0,0 };
+float camMaxSpeed = 50;
 
 World world1;
 
@@ -71,10 +74,10 @@ void Game::Shutdown()
 void Game::ProcessInput(float dt)
 {
 	if (Keys[GLFW_KEY_D] || Keys[GLFW_KEY_A])
-		camPosition.x += (Keys[GLFW_KEY_D] * maxspeed - Keys[GLFW_KEY_A] * maxspeed) * dt;
+		camPosition.x += (Keys[GLFW_KEY_D] * camMaxSpeed - Keys[GLFW_KEY_A] * camMaxSpeed) * dt;
 
 	if (Keys[GLFW_KEY_W] || Keys[GLFW_KEY_S])
-		camPosition.y += (Keys[GLFW_KEY_W] * maxspeed - Keys[GLFW_KEY_S] * maxspeed) * dt;
+		camPosition.y += (Keys[GLFW_KEY_W] * camMaxSpeed - Keys[GLFW_KEY_S] * camMaxSpeed) * dt;
 }
 
 void Game::Update(float dt)
@@ -84,6 +87,7 @@ void Game::Update(float dt)
 
 void Game::Render()
 {	
+	float scale = MAX_PIXEL_SCALE / pixelScale;
 	glm::mat4 projection = glm::ortho(-160.0f * scale + camPosition.x, 160.0f * scale + camPosition.x, -90.0f * scale + camPosition.y, 90.0f * scale + camPosition.y);
 	ResourceManager::GetShader("sprite").SetMatrix4("projection", projection);
 	
@@ -103,10 +107,25 @@ void Game::Render()
 
 void Game::ScrollInput(int scroll) //temporary
 {
-	scale -= scroll / 5.0f;
+	bool smoothZoom = false;
 
-	if (scale < 1)
-		scale = 1;
-	else if (scale > 5)
-		scale = 5;
+	if (smoothZoom)
+	{
+		pixelScale += scroll / 5.0f;
+
+		if (pixelScale < MIN_PIXEL_SCALE)
+			pixelScale = MIN_PIXEL_SCALE;
+		else if (pixelScale > MAX_PIXEL_SCALE)
+			pixelScale = MAX_PIXEL_SCALE;
+	}
+	else {
+		pixelScale += scroll;
+
+		if (pixelScale < MIN_PIXEL_SCALE)
+			pixelScale = MIN_PIXEL_SCALE;
+		else if (pixelScale > MAX_PIXEL_SCALE)
+			pixelScale = MAX_PIXEL_SCALE;
+
+		pixelScale = std::roundf(pixelScale);
+	}
 }
