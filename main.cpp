@@ -66,6 +66,11 @@ int main(int argc, char* argv[])
 
         Game::Update(deltaTime);
 
+        int FPS = 1.0f / deltaTime;
+
+        std::string title = "Crop " + std::to_string(FPS);
+        glfwSetWindowTitle(window, title.c_str());
+
         glClearColor(144 / 255.0f, 271 / 255.0f, 219 / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
