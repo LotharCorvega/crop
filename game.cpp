@@ -12,8 +12,10 @@
 #include "renderer.h"
 #include "resource_manager.h"
 
+#include "dependencies/entt/entt.hpp"
 #include <iostream>
 #include <glm/glm.hpp>
+#include <random>
 
 gameState Game::State;
 bool Game::Keys[1024];
@@ -31,6 +33,26 @@ float camMaxSpeed = 50;
 
 World world1;
 
+entt::registry myRegistry;
+
+struct PositionComponent
+{
+	glm::vec2 Position;
+};
+
+struct VelocityComponent
+{
+	glm::vec2 Velocity;
+};
+
+struct SpriteComponent
+{
+	glm::vec2 size;
+
+	Texture2D texture;
+};
+
+
 void Game::Init(unsigned int width, unsigned int height)
 {
 	State = GAME_ACTIVE;
@@ -43,11 +65,41 @@ void Game::Init(unsigned int width, unsigned int height)
 	world1.Load("saves/world1/world1.chunk");	
 
 	ResourceManager::LoadTexture("textures/empty.png", true, "empty");
-	ResourceManager::LoadTexture("textures/grass.png", true, "grass");
 	ResourceManager::LoadTexture("textures/test.png", true, "test");
+
+	ResourceManager::LoadTexture("textures/sand.png", true, "sand");
+	ResourceManager::LoadTexture("textures/grass.png", true, "grass");
+	ResourceManager::LoadTexture("textures/dirt.png", true, "dirt");
+	ResourceManager::LoadTexture("textures/stone.png", true, "stone");
+
 	ResourceManager::LoadTexture("textures/character.png", true, "character");
+	ResourceManager::LoadTexture("textures/cube.png", true, "cube");
 
 	ResourceManager::LoadShader("shaders/sprite.vert", "shaders/sprite.frag", nullptr, "sprite");
+
+	std::default_random_engine generator;
+
+	std::uniform_real_distribution<float> randPosition(-80.0f, 80.0f);
+	std::uniform_real_distribution<float> randVelocity(-10.0f, 10.0f);
+
+	for (int i = 0; i < 1; i++)
+	{
+		PositionComponent pos;
+		pos.Position = glm::vec2(randPosition(generator), randPosition(generator));
+
+		VelocityComponent vel;
+		vel.Velocity = glm::vec2(randVelocity(generator), randVelocity(generator));
+
+		SpriteComponent sprite;
+		sprite.size = glm::vec2(42, 44);
+		sprite.texture = ResourceManager::GetTexture("cube");
+
+		entt::entity cube = myRegistry.create();
+
+		myRegistry.emplace<PositionComponent>(cube, pos);
+		myRegistry.emplace<VelocityComponent>(cube, vel);
+		myRegistry.emplace<SpriteComponent>(cube, sprite);
+	}
 
 	// Set up Shader, move to renderer later
 	{
@@ -82,24 +134,41 @@ void Game::ProcessInput(float dt)
 
 void Game::Update(float dt)
 {
+	auto view = myRegistry.view<VelocityComponent>();
+	for (auto entity : view)
+	{
+		PositionComponent& pos = myRegistry.get<PositionComponent>(entity);
+		VelocityComponent& vel = myRegistry.get<VelocityComponent>(entity);
 
+		pos.Position += vel.Velocity * dt;
+	}
+
+	world1.PlayerMoved(camPosition);
 }
 
 void Game::Render()
-{	
+{		
 	float scale = MAX_PIXEL_SCALE / pixelScale;
 	glm::mat4 projection = glm::ortho(-160.0f * scale + camPosition.x, 160.0f * scale + camPosition.x, -90.0f * scale + camPosition.y, 90.0f * scale + camPosition.y);
 	ResourceManager::GetShader("sprite").SetMatrix4("projection", projection);
 	
-	world1.Draw();	
-	
-	Renderer::BatchSprite({ 0, 0, 0 }, { 23, 43 }, ResourceManager::GetTexture("character"));
+	world1.Draw();
+
+	auto view = myRegistry.view<PositionComponent, SpriteComponent>();
+	// use a callback
+	view.each([](auto& pos, auto& sprite) 
+		{
+			Renderer::BatchSprite({ pos.Position, 0 }, sprite.size, sprite.texture);
+		});
+
+	Renderer::BatchSprite({ camPosition.x - 11, camPosition.y, 0 }, { 23, 43 }, ResourceManager::GetTexture("character"));
+	Renderer::BatchSquare({ camPosition, 0 }, { 1, 1 }, { 1,0,0,1 });
 
 	// check Batch Overflows
 	{
 		int overflows = Renderer::GetOverflows();
-		if (overflows)
-			std::cout << overflows << " BATCH OVERFLOWS!" << std::endl;
+		//if (overflows)
+			//std::cout << overflows << " BATCH OVERFLOWS!" << std::endl;
 	}
 
 	Renderer::DrawBatch();

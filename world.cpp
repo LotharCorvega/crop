@@ -1,6 +1,7 @@
 #include "world.h"
 
-char chunk[World::CHUNK_SIZE][World::CHUNK_SIZE];
+#include <iostream>
+
 
 World::World()
 {
@@ -9,53 +10,54 @@ World::World()
 
 World::~World()
 {
+    for (int i = 0; i < activeChunks.size(); i++)
+        activeChunks[i].Unload();
 
+    std::cout << "chunks saved";
 }
 
 void World::Load(const char* worldName)
 {   
-    std::string line;
-    std::ifstream fstream(worldName);    
+    activeChunks.push_back(Chunk(0, 0));
+}
 
-    if (fstream)
+void World::Save()
+{
+    for (int i = 0; i < activeChunks.size(); i++)
+        activeChunks[i].Unload();
+}
+
+void World::PlayerMoved(glm::vec2 position)
+{
+    glm::vec2 chunkPos = getChunk(screenToWorld(position));
+
+    if ((int)chunkPos.x != playerChunkX || (int)chunkPos.y != playerChunkY) //maybe move chunk update checking to game class
     {
-        for (int y = 0; y < CHUNK_SIZE; y++)
-        {
-            std::getline(fstream, line);
+        playerChunkX = (int)chunkPos.x;
+        playerChunkY = (int)chunkPos.y;
 
-            for (int x = 0; x < CHUNK_SIZE; x++)
+        activeChunks.clear();   //update later
+
+
+        for (int x = -renderDistance; x <= renderDistance; x++)
+        {
+            for (int y = -renderDistance + std::abs(x); y <= renderDistance - std::abs(x); y++)
             {
-                chunk[x][y] = line[x];
+                activeChunks.push_back(Chunk(x + playerChunkX, y + playerChunkY));
             }
-        }
+        }        
     }
 }
 
 void World::Draw()
 {
-    for (int x = 0; x < CHUNK_SIZE; x++)
-        for (int y = 0; y < CHUNK_SIZE; y++)
-        {
-            switch (chunk[x][y])
-            {
-                case 'g':
-                    Renderer::BatchTile({ x, y }, ResourceManager::GetTexture("grass"));
-                    break;
-                case 't':
-                    Renderer::BatchTile({ x, y }, ResourceManager::GetTexture("test"));
-                    break;
-                case 'e':
-                    Renderer::BatchTile({ x, y }, ResourceManager::GetTexture("empty"));
-                    break;
-                default:
-                    break;
-            }
-        }
+    for (int i = 0; i < activeChunks.size(); i++)
+        activeChunks[i].Draw();
 }
 
 glm::vec2 World::screenToWorld(glm::vec2 v)
 {
-    return glm::mat2x2(1.0f, 0.5f, -1.0f, 0.5f) * v;    //Wrong
+    return glm::mat2x2(1.0f / 44.0f, -1.0f / 44.0f, 1.0f / 22.0f, 1.0f / 22.0f) * v;
 }
 
 glm::vec2 World::worldToScreen(glm::vec2 v)
@@ -73,4 +75,14 @@ glm::vec2 World::worldToScreen(glm::vec2 v)
 
     //  | 11 -11 |
     //  | 22  22 |  * 1 / (2 * 11 * 22)
+}
+
+glm::vec2 World::getChunk(glm::vec2 position)
+{
+    glm::vec2 chunkPos;
+    
+    chunkPos.x = (int)position.x / Chunk::CHUNK_SIZE - (position.x < 0);    //hax
+    chunkPos.y = (int)position.y / Chunk::CHUNK_SIZE - (position.y < 0);
+
+    return chunkPos;
 }
