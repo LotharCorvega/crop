@@ -205,11 +205,14 @@ void Renderer::BatchTile(const glm::vec2& position, const Texture2D& texture)
 {
 	glm::vec2 pos = World::worldToScreen(position);
 
-	BatchSprite({ pos.x - World::TILE_WIDTH / 2, pos.y - World::TILE_HEIGHT / 2, 0 }, { World::TILE_WIDTH, World::TILE_HEIGHT }, texture);
+	BatchSprite({ pos.x - World::TILE_WIDTH / 2, pos.y, 0 }, { World::TILE_WIDTH, World::TILE_HEIGHT }, texture);
 }
 
 int Renderer::GetOverflows()
 {
-	return overflows;
+	int FrameOverflows = overflows;
 	overflows = 0;
+	
+	return FrameOverflows;
+
 }
