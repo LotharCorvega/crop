@@ -115,6 +115,65 @@ void Renderer::DrawBatch()
 
 int overflows = 0;
 
+void Renderer::BatchSprite(const glm::vec3& worldPosition, const Texture2D& texture, const glm::vec2& spriteOffset, const glm::vec2& spriteSize, const glm::vec2& spriteAnchor, const glm::vec4& tint, const bool& animated, const unsigned int& frameCount, const float& frametime)
+{
+	if (quadCount >= maxQuadCount || textureCount >= maxTextureSlots)
+	{
+		DrawBatch();
+		overflows++;
+	}
+
+	float textureIndex = 0.0f;
+
+	for (unsigned int i = 1; i < textureCount; i++)
+		if (textureSlots[i] == texture.ID)
+		{
+			textureIndex = (float)i;
+			break;
+		}
+
+	if (textureIndex == 0.0f)
+	{
+		textureIndex = (float)textureCount;
+		textureSlots[textureCount] = texture.ID;
+		textureCount++;
+	}
+
+	glm::vec2 screenPosition = World::worldToScreen(worldPosition) - glm::vec2(spriteAnchor.x, spriteSize.y - spriteAnchor.y);	//Implicit conversion vec3 -> vec2?
+
+	glm::vec2 textureSpriteOffset = { spriteOffset.x / texture.Width, spriteOffset.y / texture.Height };
+	glm::vec2 textureSpriteSize = { spriteSize.x / texture.Width, spriteSize.y / texture.Height };
+
+	if (animated)
+	{
+		unsigned int frame = (int)(glfwGetTime() / frametime) % frameCount;		//maybe minimize glfw calls
+		textureSpriteOffset.x += textureSpriteSize.x * frame;
+	}
+
+	vertexBuffer[4 * quadCount + 0].position = { screenPosition.x , screenPosition.y , 0 };	//change to vec2
+	vertexBuffer[4 * quadCount + 0].color = tint;
+	vertexBuffer[4 * quadCount + 0].texCoord = { textureSpriteOffset.x, textureSpriteOffset.y + textureSpriteSize.y };
+	vertexBuffer[4 * quadCount + 0].texIndex = textureIndex;
+
+	vertexBuffer[4 * quadCount + 1].position = { screenPosition.x + spriteSize.x, screenPosition.y , 0 };
+	vertexBuffer[4 * quadCount + 1].color = tint;
+	vertexBuffer[4 * quadCount + 1].texCoord = { textureSpriteOffset.x + textureSpriteSize.x, textureSpriteOffset.y + textureSpriteSize.y };
+	vertexBuffer[4 * quadCount + 1].texIndex = textureIndex;
+
+	vertexBuffer[4 * quadCount + 2].position = { screenPosition.x + spriteSize.x, screenPosition.y + spriteSize.y , 0 };
+	vertexBuffer[4 * quadCount + 2].color = tint;
+	vertexBuffer[4 * quadCount + 2].texCoord = { textureSpriteOffset.x + textureSpriteSize.x, textureSpriteOffset.y };
+	vertexBuffer[4 * quadCount + 2].texIndex = textureIndex;
+
+	vertexBuffer[4 * quadCount + 3].position = { screenPosition.x , screenPosition.y + spriteSize.y , 0 };
+	vertexBuffer[4 * quadCount + 3].color = tint;
+	vertexBuffer[4 * quadCount + 3].texCoord = { textureSpriteOffset.x, textureSpriteOffset.y };
+	vertexBuffer[4 * quadCount + 3].texIndex = textureIndex;
+
+	quadCount++;
+}
+
+
 void Renderer::BatchSprite(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, const Texture2D& texture) // position.z useless sice depth buffer does not work
 {
 	if (quadCount >= maxQuadCount || textureCount >= maxTextureSlots)
@@ -212,7 +271,7 @@ int Renderer::GetOverflows()
 {
 	int FrameOverflows = overflows;
 	overflows = 0;
-	
+
 	return FrameOverflows;
 
 }

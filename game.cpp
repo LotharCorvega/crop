@@ -56,13 +56,13 @@ struct SpriteComponent
 void Game::Init(unsigned int width, unsigned int height)
 {
 	State = GAME_ACTIVE;
-	
+
 	Width = width;
 	Height = height;
 
 	Renderer::Init();
 
-	world1.Load("saves/world1/world1.chunk");	
+	world1.Load("saves/world1/world1.chunk");
 
 	ResourceManager::LoadTexture("textures/empty.png", true, "empty");
 	ResourceManager::LoadTexture("textures/test.png", true, "test");
@@ -74,6 +74,7 @@ void Game::Init(unsigned int width, unsigned int height)
 
 	ResourceManager::LoadTexture("textures/character.png", true, "character");
 	ResourceManager::LoadTexture("textures/cube.png", true, "cube");
+	ResourceManager::LoadTexture("textures/bouncy.png", true, "bouncy");
 
 	ResourceManager::LoadShader("shaders/sprite.vert", "shaders/sprite.frag", nullptr, "sprite");
 
@@ -147,22 +148,24 @@ void Game::Update(float dt)
 }
 
 void Game::Render()
-{		
+{
 	float scale = MAX_PIXEL_SCALE / pixelScale;
 	glm::mat4 projection = glm::ortho(-160.0f * scale + camPosition.x, 160.0f * scale + camPosition.x, -90.0f * scale + camPosition.y, 90.0f * scale + camPosition.y);
 	ResourceManager::GetShader("sprite").SetMatrix4("projection", projection);
-	
+
 	world1.Draw();
 
 	auto view = myRegistry.view<PositionComponent, SpriteComponent>();
 	// use a callback
-	view.each([](auto& pos, auto& sprite) 
+	view.each([](auto& pos, auto& sprite)
 		{
 			Renderer::BatchSprite({ pos.Position, 0 }, sprite.size, sprite.texture);
 		});
 
 	Renderer::BatchSprite({ camPosition.x - 11, camPosition.y, 0 }, { 23, 43 }, ResourceManager::GetTexture("character"));
 	Renderer::BatchSquare({ camPosition, 0 }, { 1, 1 }, { 1,0,0,1 });
+
+	Renderer::BatchSprite({ 7.5f, 7.5f, 0 }, ResourceManager::GetTexture("bouncy"), { 0,0 }, { 14, 18 }, { 7, 18 }, { 1.0f, 1.0f, 1.0f, 1.0f }, true, 8, 0.05f);
 
 	// check Batch Overflows
 	{
