@@ -1,5 +1,6 @@
 #include "world.h"
 
+#include <math.h>
 #include <iostream>
 
 
@@ -81,8 +82,8 @@ glm::vec2 World::getChunk(glm::vec2 position)
 {
     glm::vec2 chunkPos;
     
-    chunkPos.x = (int)position.x / Chunk::CHUNK_SIZE - (position.x < 0);    //hax
-    chunkPos.y = (int)position.y / Chunk::CHUNK_SIZE - (position.y < 0);
+    chunkPos.x = std::floor(position.x / Chunk::CHUNK_SIZE);
+    chunkPos.y = std::floor(position.y / Chunk::CHUNK_SIZE);
 
     return chunkPos;
 }
