@@ -35,23 +35,22 @@ void World::PlayerMoved(glm::vec2 position)
     if ((int)chunkPos.x != playerChunkX || (int)chunkPos.y != playerChunkY) //maybe move chunk update checking to game class
     {
         playerChunkX = (int)chunkPos.x;
-        playerChunkY = (int)chunkPos.y;
-
-        activeChunks.clear();   //update later
-
-
-        for (int x = -renderDistance; x <= renderDistance; x++)
-        {
-            for (int y = -renderDistance + std::abs(x); y <= renderDistance - std::abs(x); y++)
-            {
-                activeChunks.push_back(Chunk(x + playerChunkX, y + playerChunkY));
-            }
-        }        
+        playerChunkY = (int)chunkPos.y;       
     }
 }
 
 void World::Draw()
 {
+    activeChunks.clear();   //update later
+
+    for (int x = -renderDistance; x <= renderDistance; x++)
+    {
+        for (int y = -renderDistance + std::abs(x); y <= renderDistance - std::abs(x); y++)
+        {
+            activeChunks.push_back(Chunk(x + playerChunkX, y + playerChunkY));
+        }
+    }
+    
     for (int i = 0; i < activeChunks.size(); i++)
         activeChunks[i].Draw();
 }
